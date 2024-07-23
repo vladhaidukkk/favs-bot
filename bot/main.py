@@ -1,16 +1,15 @@
 import asyncio
 import logging
-import os
 
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command, CommandStart
 
+from bot.config import settings
+
 # To see INFO aiogram logs in the console.
 logging.basicConfig(level=logging.INFO)
 
-BOT_TOKEN = os.environ["BOT_TOKEN"]
-
-bot = Bot(token=BOT_TOKEN)
+bot = Bot(token=settings.bot_token)
 dp = Dispatcher()
 
 
