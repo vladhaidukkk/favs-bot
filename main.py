@@ -15,7 +15,12 @@ dp = Dispatcher()
 
 @dp.message()
 async def echo(message: types.Message):
-    await message.answer(text=message.text)
+    if message.text:
+        await message.answer(text=message.text)
+    elif message.sticker:
+        await message.answer_sticker(sticker=message.sticker.file_id)
+    else:
+        await message.answer("You've sent something strange 🙃")
 
 
 async def main():
