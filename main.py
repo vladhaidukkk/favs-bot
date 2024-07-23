@@ -15,11 +15,9 @@ dp = Dispatcher()
 
 @dp.message()
 async def echo(message: types.Message):
-    if message.text:
-        await message.answer(text=message.text)
-    elif message.sticker:
-        await message.answer_sticker(sticker=message.sticker.file_id)
-    else:
+    try:
+        await message.send_copy(chat_id=message.chat.id)
+    except TypeError:
         await message.answer("You've sent something strange 🙃")
 
 
