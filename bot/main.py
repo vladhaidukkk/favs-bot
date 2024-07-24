@@ -23,9 +23,9 @@ async def handle_start(message: types.Message):
 @dp.message(Command("help"))
 async def handle_help(message: types.Message):
     text = dedent(
-        """\
-        I'm a simple *echo* bot\\.
-        Send me whatever you want and I will resend it\\.
+        r"""
+        I'm a simple *echo* bot\.
+        Send me whatever you want and I will resend it\.
         """
     )
     await message.answer(text=text, parse_mode=ParseMode.MARKDOWN_V2)
