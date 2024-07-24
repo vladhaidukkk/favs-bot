@@ -1,7 +1,9 @@
 import asyncio
 import logging
+from textwrap import dedent
 
 from aiogram import Bot, Dispatcher, types
+from aiogram.enums import ParseMode
 from aiogram.filters import Command, CommandStart
 
 from bot.config import settings
@@ -20,9 +22,13 @@ async def handle_start(message: types.Message):
 
 @dp.message(Command("help"))
 async def handle_help(message: types.Message):
-    text = "I'm a simple echo bot.\nSend me whatever you want and I will resend it."
-    bold_name_entity = types.MessageEntity(type="bold", offset=len(text[:13]), length=4)
-    await message.answer(text=text, entities=[bold_name_entity])
+    text = dedent(
+        """\
+        I'm a simple *echo* bot\\.
+        Send me whatever you want and I will resend it\\.
+        """
+    )
+    await message.answer(text=text, parse_mode=ParseMode.MARKDOWN_V2)
 
 
 @dp.message()
