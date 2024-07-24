@@ -42,10 +42,7 @@ async def handle_help(message: types.Message):
 
 @dp.message()
 async def echo(message: types.Message):
-    try:
-        await message.send_copy(chat_id=message.chat.id)
-    except TypeError:
-        await message.answer("You've sent something strange 🙃")
+    await message.copy_to(chat_id=message.chat.id)
 
 
 async def main():
