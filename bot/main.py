@@ -1,17 +1,21 @@
 import asyncio
 import logging
-from textwrap import dedent
 
 from aiogram import Bot, Dispatcher, types
+from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.filters import Command, CommandStart
+from aiogram.utils import markdown
 
 from bot.config import settings
 
 # To see INFO aiogram logs in the console.
 logging.basicConfig(level=logging.INFO)
 
-bot = Bot(token=settings.bot_token)
+bot = Bot(
+    token=settings.bot_token,
+    default=DefaultBotProperties(parse_mode=ParseMode.MARKDOWN_V2),
+)
 dp = Dispatcher()
 
 
@@ -22,13 +26,18 @@ async def handle_start(message: types.Message):
 
 @dp.message(Command("help"))
 async def handle_help(message: types.Message):
-    text = dedent(
-        r"""
-        I'm a simple *echo* bot\.
-        Send me whatever you want and I will resend it\.
-        """
+    text = markdown.text(
+        markdown.text(
+            "I'm a simple",
+            markdown.bold("echo"),
+            markdown.markdown_decoration.quote("bot."),
+        ),
+        markdown.markdown_decoration.quote(
+            "Send me whatever you want and I will resend it."
+        ),
+        sep="\n",
     )
-    await message.answer(text=text, parse_mode=ParseMode.MARKDOWN_V2)
+    await message.answer(text=text)
 
 
 @dp.message()
