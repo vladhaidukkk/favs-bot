@@ -3,10 +3,12 @@ import logging
 from enum import Enum
 
 from aiogram import Bot, Dispatcher, F, types
+from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
+from aiogram.utils import markdown
 from sqlalchemy import insert, select
 
 from bot.config import settings
@@ -22,6 +24,7 @@ dp = Dispatcher()
 
 class ButtonText(Enum):
     ADD_WISH = "✨Add a Wish"
+    SHOW_ALL_WISHES = "📜 Show All Wishes"
 
 
 @dp.message(CommandStart())
@@ -35,7 +38,10 @@ async def handle_start(message: types.Message) -> None:
             await session.execute(stmt)
             await session.commit()
 
-    buttons = [KeyboardButton(text=ButtonText.ADD_WISH.value)]
+    buttons = [
+        KeyboardButton(text=ButtonText.ADD_WISH.value),
+        KeyboardButton(text=ButtonText.SHOW_ALL_WISHES.value),
+    ]
     keyboard_markup = ReplyKeyboardMarkup(keyboard=[buttons], resize_keyboard=True)
     await message.answer(
         text=f"Hello, {message.from_user.full_name}!",
@@ -77,6 +83,20 @@ async def process_description(message: types.Message, state: FSMContext) -> None
         await session.commit()
 
     await message.answer(f"New wish with ID: {new_wish.id} was created!")
+
+
+@dp.message(F.text == ButtonText.SHOW_ALL_WISHES.value)
+async def handle_show_all_wishes(message: types.Message) -> None:
+    async with session_factory() as session:
+        query = select(WishModel).filter_by(user_telegram_id=message.from_user.id)
+        result = await session.execute(query)
+        wishes = result.scalars().all()
+
+    text = markdown.text(
+        *(f"{idx}. {wish.title}" for idx, wish in enumerate(wishes, start=1)),
+        sep="\n",
+    )
+    await message.answer(text=text, parse_mode=ParseMode.HTML)
 
 
 async def main() -> None:
