@@ -16,3 +16,13 @@ start:
 
 up:
 	docker compose -f docker-compose-local.yml up -d
+
+# Migrations Management
+revise msg:
+    alembic revision --autogenerate -m "{{msg}}"
+
+migrate target="head":
+    alembic upgrade {{target}}
+
+revert target="-1":
+    alembic downgrade {{target}}
