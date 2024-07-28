@@ -11,7 +11,7 @@ from sqlalchemy import insert, select
 
 from bot.config import settings
 from bot.db.core import session_factory
-from bot.db.models import UserModel
+from bot.db.models import UserModel, WishModel
 
 # To see INFO aiogram logs in the console.
 logging.basicConfig(level=logging.INFO)
@@ -66,7 +66,17 @@ async def process_description(message: types.Message, state: FSMContext) -> None
     await state.update_data(description=message.text)
     data = await state.get_data()
     await state.clear()
-    await message.answer(f"Title: {data['title']}, Description: {data['description']}")
+
+    async with session_factory() as session:
+        new_wish = WishModel(
+            title=data["title"],
+            description=data["description"],
+            user_telegram_id=message.from_user.id,
+        )
+        session.add(new_wish)
+        await session.commit()
+
+    await message.answer(f"New wish with ID: {new_wish.id} was created!")
 
 
 async def main() -> None:
