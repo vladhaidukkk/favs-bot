@@ -26,9 +26,16 @@ class DatabaseSettings(BaseModel):
         )
 
 
+class AlchemySettings(BaseModel):
+    echo: bool = False
+    echo_pool: bool = False
+    max_overflow: int = 10
+
+
 class Settings(BaseSettings):
     bot: BotSettings
     db: DatabaseSettings
+    alchemy: AlchemySettings
 
     model_config = SettingsConfigDict(
         env_nested_delimiter="__",
