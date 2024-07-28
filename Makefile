@@ -10,6 +10,9 @@ lint:
 fix:
 	ruff check --fix
 
-# Start Bot
+# Start Bot & Containers
 start:
 	python -m bot.main
+
+up:
+	docker compose -f docker-compose-local.yml up -d
