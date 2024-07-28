@@ -9,7 +9,7 @@ from bot.config import settings
 # To see INFO aiogram logs in the console.
 logging.basicConfig(level=logging.INFO)
 
-bot = Bot(token=settings.bot_token)
+bot = Bot(token=settings.bot.token)
 dp = Dispatcher()
 
 
