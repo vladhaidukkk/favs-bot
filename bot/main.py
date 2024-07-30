@@ -1,13 +1,15 @@
 import asyncio
 import logging
+import sys
 from enum import Enum
 
-from aiogram import Bot, Dispatcher, F, types
+from aiogram import Bot, Dispatcher, F
+from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
-from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
+from aiogram.types import KeyboardButton, Message, ReplyKeyboardMarkup
 from aiogram.utils import markdown
 from sqlalchemy import insert, select
 
@@ -15,10 +17,6 @@ from bot.config import settings
 from bot.db.core import session_factory
 from bot.db.models import UserModel, WishModel
 
-# To see INFO aiogram logs in the console.
-logging.basicConfig(level=logging.INFO)
-
-bot = Bot(token=settings.bot.token)
 dp = Dispatcher()
 
 
@@ -28,7 +26,7 @@ class ButtonText(Enum):
 
 
 @dp.message(CommandStart())
-async def handle_start(message: types.Message) -> None:
+async def handle_start(message: Message) -> None:
     async with session_factory() as session:
         query = select(UserModel).filter_by(telegram_id=message.from_user.id)
         result = await session.execute(query)
@@ -55,20 +53,20 @@ class AddWishForm(StatesGroup):
 
 
 @dp.message(F.text == ButtonText.ADD_WISH.value)
-async def handle_add_wish(message: types.Message, state: FSMContext) -> None:
+async def handle_add_wish(message: Message, state: FSMContext) -> None:
     await state.set_state(AddWishForm.title)
     await message.answer(text="Enter the title of your wish:")
 
 
 @dp.message(AddWishForm.title)
-async def process_title(message: types.Message, state: FSMContext) -> None:
+async def process_title(message: Message, state: FSMContext) -> None:
     await state.update_data(title=message.text)
     await state.set_state(AddWishForm.description)
     await message.answer("Enter the description of your wish:")
 
 
 @dp.message(AddWishForm.description)
-async def process_description(message: types.Message, state: FSMContext) -> None:
+async def process_description(message: Message, state: FSMContext) -> None:
     await state.update_data(description=message.text)
     data = await state.get_data()
     await state.clear()
@@ -86,7 +84,7 @@ async def process_description(message: types.Message, state: FSMContext) -> None
 
 
 @dp.message(F.text == ButtonText.SHOW_ALL_WISHES.value)
-async def handle_show_all_wishes(message: types.Message) -> None:
+async def handle_show_all_wishes(message: Message) -> None:
     async with session_factory() as session:
         query = select(WishModel).filter_by(user_telegram_id=message.from_user.id)
         result = await session.execute(query)
@@ -100,8 +98,10 @@ async def handle_show_all_wishes(message: types.Message) -> None:
 
 
 async def main() -> None:
+    bot = Bot(token=settings.bot.token, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     await dp.start_polling(bot)
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, stream=sys.stdout)
     asyncio.run(main())
